@@ -18,7 +18,7 @@ it useful.
 
 # Requirements
 
-The followed in needed for this to work:
+The following is needed in order for this to function as intended:
 
 * Linux kernel 4.4+
 * golang
