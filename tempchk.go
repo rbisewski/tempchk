@@ -157,7 +157,7 @@ func main() {
                         "hardware name file. Skipping...")
 
             // Move on to the next device.
-            continue;
+            continue
         }
 
         // If the hardware name file does not contain anything of value,
@@ -170,7 +170,7 @@ func main() {
                         " does not contain valid data. Skipping...")
 
             // Move on to the next device.
-            continue;
+            continue
         }
 
         // Trim away any excess whitespace from the hardware name file data.
