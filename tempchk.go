@@ -45,6 +45,12 @@ var (
     // kernel module, in which case the temperature adjustment phase can be
     // skipped if the 'k10temp' module is also present.
     fam15h_power_module_in_use = false
+
+    // size of the longest hwmonX/name entry string
+    max_entry_length = 0
+
+    // spacer size
+    spacer_size = 4
 )
 
 //! Function to handle printing debug messages when debug mode is on.
@@ -210,9 +216,17 @@ func main() {
                         "valid hardware temperature file, ergo no " +
                         "temperature data to print for this device.")
 
+            // append string values equivalent to the longest length.
+            for len(name_value_of_hardware_device_as_string) <
+              max_entry_length+spacer_size {
+
+                // append a space to the end of the string
+                name_value_of_hardware_device_as_string += " "
+            }
+
             // Print a none-available since no temperature data is available.
             fmt.Println(dir.Name(), " | ",
-              name_value_of_hardware_device_as_string, " \t N/A\n")
+              name_value_of_hardware_device_as_string, "N/A\n")
 
             // With that done, go ahead and move on to the next device.
             continue
@@ -238,8 +252,17 @@ func main() {
                         "integer data in the hardware temperature file, " +
                         "ergo no temperature data to print for this device.")
 
-            // Print a none-available since no temperature data is available.
-            fmt.Println("\nTemp: N/A\n\n")
+            // append string values equivalent to the longest length.
+            for len(name_value_of_hardware_device_as_string) <
+              max_entry_length+spacer_size {
+
+                // append a space to the end of the string
+                name_value_of_hardware_device_as_string += " "
+            }
+
+            // Finally, print out the temperature data of the current device.
+            fmt.Println(dir.Name(), " | ",
+              name_value_of_hardware_device_as_string, "N/A\n")
 
             // With that done, go ahead and move on to the next device.
             continue
@@ -261,9 +284,17 @@ func main() {
             temperature_value_of_hardware_device_as_int += 30
         }
 
+        // append string values equivalent to the longest length.
+        for len(name_value_of_hardware_device_as_string) <
+          max_entry_length+spacer_size {
+
+            // append a space to the end of the string
+            name_value_of_hardware_device_as_string += " "
+        }
+
         // Finally, print out the temperature data of the current device.
         fmt.Println(dir.Name(), " | ",
-          name_value_of_hardware_device_as_string, " \t ",
+          name_value_of_hardware_device_as_string,
           temperature_value_of_hardware_device_as_int, "C\n")
     }
 
@@ -329,6 +360,16 @@ func SetGlobalSensorFlags(dirs []os.FileInfo) (error) {
         // Trim away any excess whitespace from the hardware name file data.
         name_value_of_hardware_device_as_string :=
           strings.Trim(string(name_value_of_hardware_device), " \n")
+
+        // Determine the length of the longest entry string
+        //
+        // TODO: this is a less than ideal place for this code, consider
+        //       rewriting how this program handles hwmonX entries at some
+        //       future date
+        //
+        if len(name_value_of_hardware_device_as_string) > max_entry_length {
+            max_entry_length = len(name_value_of_hardware_device_as_string)
+        }
 
         // Conduct a quick check to determine if the 'fam15h_power' module
         // is currently in use.
