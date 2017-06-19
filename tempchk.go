@@ -130,6 +130,15 @@ func main() {
         debug_print(debug_string_for_list_of_device_dirs)
     }
 
+    // Search thru the directories and set the relevant flags...
+    err = SetGlobalSensorFlags(list_of_device_dirs)
+
+    // safety check, ensure no errors occurred
+    if err != nil {
+        fmt.Println(err)
+        os.Exit(1)
+    }
+
     // For each of the devices...
     for _, dir := range list_of_device_dirs {
 
@@ -175,12 +184,6 @@ func main() {
         // Trim away any excess whitespace from the hardware name file data.
         name_value_of_hardware_device_as_string :=
           strings.Trim(string(name_value_of_hardware_device), " \n")
-
-        // Conduct a quick check to determine if the 'fam15h_power' module
-        // is currently in use.
-        if name_value_of_hardware_device_as_string == "fam15h_power" {
-            fam15h_power_module_in_use = true
-        }
 
         // Assemble the filepath to the temperature file of the currently
         // given hardware device.
@@ -266,4 +269,74 @@ func main() {
 
     // If all is well, we can return quietly here.
     os.Exit(0)
+}
+
+//! Set global flags which may alter how Linux seems temperatures
+/*
+ * @param    os.FileInfo[]    array of directory data
+ *
+ * @return   error            error message, if any
+ */
+func SetGlobalSensorFlags(dirs []os.FileInfo) (error) {
+
+    // input validation
+    if dirs == nil || len(dirs) < 1 {
+        return fmt.Errorf("SetGlobalSensorFlags() --> invalid input")
+    }
+
+    // Cycle thru the entire list of device directories...
+    for _, dir := range dirs {
+
+        // Assemble the filepath to the name file of the currently given
+        // hardware device.
+        hardware_name_filepath_of_given_device := hardware_monitor_directory +
+          dir.Name() + "/" + hardware_name_file
+
+        // If debug mode, print out the current 'name' file we are about
+        // to open.
+        debug_print(dir.Name() + " --> " +
+          hardware_name_filepath_of_given_device)
+
+        // ...check to see if a 'name' file is present inside the directory.
+        name_value_of_hardware_device, err := ioutil.ReadFile(
+          hardware_name_filepath_of_given_device)
+
+        // If err is not nil, skip this device.
+        if err != nil {
+
+            // If debug mode, then print out a message telling the user
+            // which device is missing a hardware 'name' file.
+            debug_print("Warning: " + dir.Name() + " does not contain a " +
+                        "hardware name file. Skipping...")
+
+            // Move on to the next device.
+            continue
+        }
+
+        // If the hardware name file does not contain anything of value,
+        // skip it and move on to the next device.
+        if len(name_value_of_hardware_device) < 1 {
+
+            // If debug mode, then print out a message telling the user
+            // which device is missing a hardware 'name' file.
+            debug_print("Warning: The hardware name file of " + dir.Name() +
+                        " does not contain valid data. Skipping...")
+
+            // Move on to the next device.
+            continue
+        }
+
+        // Trim away any excess whitespace from the hardware name file data.
+        name_value_of_hardware_device_as_string :=
+          strings.Trim(string(name_value_of_hardware_device), " \n")
+
+        // Conduct a quick check to determine if the 'fam15h_power' module
+        // is currently in use.
+        if name_value_of_hardware_device_as_string == "fam15h_power" {
+            fam15h_power_module_in_use = true
+        }
+    }
+
+    // everything worked fine, so return null
+    return nil
 }
