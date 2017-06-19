@@ -40,6 +40,11 @@ var (
 
     // Attribute file for storing the hardware device current temperature.
     hardware_temp_file = "temp1_input"
+
+    // Flag to check if the device in question uses the 'fam15h_power'
+    // kernel module, in which case the temperature adjustment phase can be
+    // skipped if the 'k10temp' module is also present.
+    fam15h_power_module_in_use = false
 )
 
 //! Function to handle printing debug messages when debug mode is on.
@@ -95,12 +100,6 @@ func panic_if_error(e error) {
 // PROGRAM MAIN
 //
 func main() {
-
-    //
-    // https://golang.org/pkg/io/ioutil/#ReadDir
-    //
-    // https://golang.org/pkg/io/ioutil/#ReadFile
-    //
 
     // Print out a few lines telling the user that the program has started.
     fmt.Println("\n-----------------------------------------------")
@@ -177,11 +176,11 @@ func main() {
         name_value_of_hardware_device_as_string :=
           strings.Trim(string(name_value_of_hardware_device), " \n")
 
-        // Now, since the hardware name file contains valid string data, 
-        // go ahead and print out the device name.
-        fmt.Println("Device: " + name_value_of_hardware_device_as_string +
-                    " (" + dir.Name() + ")")
-        fmt.Println("-------")
+        // Conduct a quick check to determine if the 'fam15h_power' module
+        // is currently in use.
+        if name_value_of_hardware_device_as_string == "fam15h_power" {
+            fam15h_power_module_in_use = true
+        }
 
         // Assemble the filepath to the temperature file of the currently
         // given hardware device.
@@ -209,7 +208,8 @@ func main() {
                         "temperature data to print for this device.")
 
             // Print a none-available since no temperature data is available.
-            fmt.Println("\nTemp: N/A\n\n")
+            fmt.Println(dir.Name(), " | ",
+              name_value_of_hardware_device_as_string, " \t N/A\n")
 
             // With that done, go ahead and move on to the next device.
             continue
@@ -242,7 +242,7 @@ func main() {
             continue
         }
 
-        // Usually hardware sensor is uses 3-sigma of precision and stores
+        // Usually hardware sensors uses 3-sigma of precision and stores
         // the value as an integer for purposes of simplicity.
         //
         // Ergo, this needs to be divided by 1000 to give temperature
@@ -251,14 +251,17 @@ func main() {
         temperature_value_of_hardware_device_as_int /= 1000
 
         // This acts as a work-around for the k10temp sensor module.
-        if name_value_of_hardware_device_as_string == "k10temp" {
+        if name_value_of_hardware_device_as_string == "k10temp" &&
+          !fam15h_power_module_in_use {
 
             // Add 30 degrees to the current temperature.
             temperature_value_of_hardware_device_as_int += 30
         }
 
         // Finally, print out the temperature data of the current device.
-        fmt.Println("\nTemp:", temperature_value_of_hardware_device_as_int, "C\n\n")
+        fmt.Println(dir.Name(), " | ",
+          name_value_of_hardware_device_as_string, " \t ",
+          temperature_value_of_hardware_device_as_int, "C\n")
     }
 
     // If all is well, we can return quietly here.
