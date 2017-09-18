@@ -18,6 +18,7 @@ package main
 //
 import (
     "fmt"
+    "flag"
     "io/ioutil"
     "os"
     "strconv"
@@ -51,7 +52,21 @@ var (
 
     // spacer size
     spacer_size = 4
+
+    // Whether or not to print the current version of the program
+    printVersion = false
+
+    // default version value
+    Version = "0.0"
 )
+
+// Initialize the argument input flags.
+func init() {
+
+    // Version mode flag
+    flag.BoolVar(&printVersion, "version", false,
+      "Print the current version of this program and exit.")
+}
 
 //! Function to handle printing debug messages when debug mode is on.
 /*
@@ -106,6 +121,16 @@ func panic_if_error(e error) {
 // PROGRAM MAIN
 //
 func main() {
+
+    // Parse the flags, if any.
+    flag.Parse()
+
+    // if requested, go ahead and print the version; afterwards exit the
+    // program, since this is all done
+    if (printVersion) {
+        fmt.Println("tempchk v" + Version)
+        os.Exit(0)
+    }
 
     // Print out a few lines telling the user that the program has started.
     fmt.Println("\n-----------------------------------------------")
