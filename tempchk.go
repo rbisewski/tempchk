@@ -98,24 +98,6 @@ func debugPrint(debugMsg string) {
 	fmt.Println(debugMsg)
 }
 
-//! Function to panic if an error has occurred.
-/*
- * @param      error    given golang error value
- *
- * @returns    none
- */
-func panicIfError(e error) {
-
-	// Input validation.
-	if e == nil {
-		return
-	}
-
-	// Tell the end user something bad has occurred, and then do a panic()
-	fmt.Println("Error: The following critical issue has occurred...")
-	panic(e)
-}
-
 //
 // PROGRAM MAIN
 //
@@ -138,7 +120,9 @@ func main() {
 
 	// Attempt to read in our file contents.
 	listOfDeviceDirs, err := ioutil.ReadDir(hardwareMonitorDirectory)
-	panicIfError(err)
+	if err != nil {
+		panic(err)
+	}
 
 	// Debug mode, print out a list of files in the directory specified by
 	// the "hardwareMonitorDirectory" global variable.

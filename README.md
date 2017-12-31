@@ -30,14 +30,18 @@ temperature obsolete. Feel free to correct me if this is incorrect.
 
 # Running
 
-0) Build this program as you would a simple golang module.
+0) Build this program as you would a simple POSIX program:
 
-go build tempchk
+make
 
 1) Run the program.
 
 ./tempchk
 
+
+# TODOs
+
+* Adjust logic to allow for proper Ryzen temperature sensor output
 
 # Authors
 
