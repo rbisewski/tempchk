@@ -17,7 +17,7 @@ endif
 
 all: build
 
-build:
+build: clean
 	@echo 'Building tempchk...'
 	@go build -ldflags '-s -w -X main.Version='${VERSION}
 
