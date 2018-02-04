@@ -27,7 +27,7 @@ clean:
 
 install: build
 	@echo installing executable file to /usr/bin/tempchk
-	@sudo cp trackpadctl /usr/bin/tempchk
+	@sudo cp tempchk /usr/bin/tempchk
 
 uninstall: clean
 	@echo removing executable file from /usr/bin/tempchk
