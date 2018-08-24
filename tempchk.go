@@ -28,10 +28,8 @@ var (
 	// Attribute file for storing the hardware device current temperature.
 	hardwareTempFile = "temp1_input"
 
-	// Flag to check if the device in question uses the 'fam15h_power'
-	// kernel module, in which case the temperature adjustment phase can be
-	// skipped if the 'k10temp' module is also present.
-	fam15hPowerModuleInUse = false
+	// flag to check whether the AMD digital thermo module is in use
+	digitalAmdPowerModuleInUse = false
 
 	// size of the longest hwmonX/name entry string
 	maxEntryLength = 0
@@ -240,7 +238,7 @@ func main() {
 
 		// This acts as a work-around for the k10temp sensor module.
 		if nameValueOfHardwareDeviceAsString == "k10temp" &&
-			!fam15hPowerModuleInUse {
+			!digitalAmdPowerModuleInUse {
 
 			// Add 30 degrees to the current temperature.
 			temperatureValueOfHardwareDeviceAsInt += 30
