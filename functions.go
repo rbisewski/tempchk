@@ -109,8 +109,26 @@ func SetGlobalSensorFlags(dirs []os.FileInfo) error {
 		// Conduct a quick check to determine if the 'fam15h_power' module
 		// is currently in use.
 		if nameValueOfHardwareDeviceAsString == "fam15h_power" {
-			fam15hPowerModuleInUse = true
+			digitalAmdPowerModuleInUse = true
 		}
+	}
+
+	//
+	// attempt to read from the CPU info file to determine if Ryzen
+	//
+
+	cpuinfoFileAsBytes, err := ioutil.ReadFile(cpuinfoDirectory)
+	if len(cpuinfoFileAsBytes) == 0 || err != nil {
+		return nil
+	}
+
+	cpuinfoString := string(cpuinfoFileAsBytes)
+	if cpuinfoString == "" {
+		return nil
+	}
+
+	if strings.Contains(cpuinfoString, "Ryzen") {
+		digitalAmdPowerModuleInUse = true
 	}
 
 	// everything worked fine, so return null
