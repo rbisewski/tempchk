@@ -30,18 +30,17 @@ temperature obsolete. Feel free to correct me if this is incorrect.
 
 # Running
 
-0) Build this program as you would a simple POSIX program:
+Build this program as you would a simple POSIX program:
 
+```
 make
+```
 
-1) Run the program.
+Run the program like so:
 
+```
 ./tempchk
-
-
-# TODOs
-
-* Adjust logic to allow for proper Ryzen temperature sensor output
+```
 
 # Authors
 
