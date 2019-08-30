@@ -150,11 +150,11 @@ func main() {
 		// Trim away any excess whitespace from the hardware name file data.
 		trimmedName := strings.Trim(string(nameValueOfHardwareDevice), " \n")
 
-                err, sensorData := GetSensorData(trimmedName, dir.Name())
+                sensors, err := GetSensorData(trimmedName, dir.Name())
 
 		// If err is not nil, then the temperature file does not have valid
 		// integer data. So tell the end-user no data is available.
-		if err != nil || len(trimmedName) < 1 {
+		if err != nil || len(sensors) < 1 {
 
 			// If debug mode, then print out a message telling the user
 			// which device is missing a hardware 'temperature' file.
@@ -163,10 +163,7 @@ func main() {
 				"ergo no temperature data to print for this device.")
 
 			// append string values equivalent to the longest length.
-			for len(trimmedName) <
-				maxEntryLength+spacerSize {
-
-				// append a space to the end of the string
+			for len(trimmedName) < maxEntryLength+spacerSize {
 				trimmedName += " "
 			}
 
@@ -178,34 +175,37 @@ func main() {
 			continue
 		}
 
-		// Usually hardware sensors uses 3-sigma of precision and stores
-		// the value as an integer for purposes of simplicity.
-		//
-		// Ergo, this needs to be divided by 1000 to give temperature
-		// values that are meaningful to humans.
-		//
-		sensorData /= 1000
+                for _, sensor := range sensors {
 
-		// This acts as a work-around for the k10temp sensor module.
-		if trimmedName == "k10temp" &&
-			!digitalAmdPowerModuleInUse {
+                        // Usually hardware sensors uses 3-sigma of precision and stores
+                        // the value as an integer for purposes of simplicity.
+                        //
+                        // Ergo, this needs to be divided by 1000 to give temperature
+                        // values that are meaningful to humans.
+                        //
+                        sensor.intData /= 1000
 
-			// Add 30 degrees to the current temperature.
-			sensorData += 30
-		}
+                        // This acts as a work-around for the k10temp sensor module.
+                        if trimmedName == "k10temp" &&
+				!digitalAmdPowerModuleInUse {
 
-		// append string values equivalent to the longest length.
-		for len(trimmedName) <
-			maxEntryLength+spacerSize {
+				// Add 30 degrees to the current temperature.
+				sensor.intData += 30
+                        }
 
-			// append a space to the end of the string
-			trimmedName += " "
-		}
+                        // append string values equivalent to the longest length.
+                        for len(trimmedName) <
+				maxEntryLength+spacerSize {
 
-		// Finally, print out the temperature data of the current device.
-		fmt.Println(dir.Name(), "  ",
-			trimmedName,
-			sensorData, "C")
+				// append a space to the end of the string
+				trimmedName += " "
+                        }
+
+                        // Finally, print out the temperature data of the current device.
+                        fmt.Println(dir.Name(), "  ",
+				trimmedName,
+				sensor.intData, "C")
+                }
 	}
 
 	// If all is well, we can return quietly here.

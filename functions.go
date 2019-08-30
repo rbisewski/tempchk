@@ -43,45 +43,67 @@ func debug(debugMsg string) {
  * @param      string    name of device
  * @param      string    full path of the given hwmon directory
  *
- * @returns    error     whether or not the output is feasible
- *             int       sensor data, as an integer; e.g. degrees C or RPM
+ * @returns    Sensor    sensor data object
+ *             error     whether or not the output is feasible
  */
-func GetSensorData(name string, hwmon string) (error, int) {
+func GetSensorData(name string, hwmon string) ([]Sensor, error) {
+
+        sensors := make([]Sensor, 0)
 
         // input validation
         if name == "" || hwmon == "" {
-                return fmt.Errorf("GetSensorData(): invalid input"), -1
+                return sensors, fmt.Errorf("GetSensorData(): invalid input")
         }
 
-	// Assemble the filepath to the temperature file of the currently
-	// given hardware device.
-	path := hardwareMonitorDirectory + hwmon + "/" +
-                tempPrefix + "1" + inputSuffix
+        for i := 1; i < 255; i++ {
+                index := strconv.Itoa(i)
 
-	// If debug mode, print out the current 'temperature' file we are
-	// about to open.
-	debug(hwmon + " --> " + path)
+	        // Assemble the filepath to the temperature file of the currently
+	        // given hardware device.
+	        path := hardwareMonitorDirectory + hwmon + "/" +
+                        tempPrefix + index + inputSuffix
 
-	// If the hardware monitor contains an actively-updating temperature
-	// sensor, then attempt to open it.
-	rawData, err := ioutil.ReadFile(path)
+	        // If debug mode, print out the current 'temperature' file we are
+	        // about to open.
+	        debug(hwmon + " --> " + path)
 
-	// If err is not nil, or temperature file is empty, tell the
-	// end-user this device does not appear to have temperature data.
-	if err != nil || len(rawData) < 1 {
-                return err, -1
-	}
+	        // If the hardware monitor contains an actively-updating temperature
+	        // sensor, then attempt to open it.
+	        rawData, err := ioutil.ReadFile(path)
 
-	// If debug mode, tell the end-user that this is converted to
-	// a string.
-	debug("Converting temperature file data from " +
-		hwmon + " into a string.")
+	        // If err is not nil, or temperature file is empty, tell the
+	        // end-user this device does not appear to have temperature data.
+	        if err != nil || len(rawData) < 1 {
+                        break
+	        }
 
-	// Attempt to convert the temperature to a string, trim it, and then
-	// to an integer value afterwards.
-	trimmedIntData, err := strconv.Atoi(strings.Trim(string(rawData), " \n"))
+	        // If debug mode, tell the end-user that this is converted to
+	        // a string.
+	        debug("Converting temperature file data from " +
+	            hwmon + " into a string.")
 
-        return err, trimmedIntData
+	        // Attempt to convert the temperature to a string, trim it, and then
+	        // to an integer value afterwards.
+	        trimmedIntData, err := strconv.Atoi(strings.Trim(string(rawData), " \n"))
+	        if err != nil || trimmedIntData < 1 {
+                        continue
+	        }
+
+                sensor := Sensor{
+                       name: name,
+                       path: path,
+                       category: "temperature",
+                       intData: trimmedIntData,
+                }
+
+                sensors = append(sensors, sensor)
+        }
+
+        if len(sensors) == 0 {
+                return sensors, fmt.Errorf("GetSensorData(): no valid sensors")
+        }
+
+        return sensors, nil
 }
 
 // SetGlobalSensorFlags ... alters how Linux sees temperatures
