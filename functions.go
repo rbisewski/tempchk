@@ -13,7 +13,7 @@ import (
  *
  * @returns    none
  */
-func debugPrint(debugMsg string) {
+func debug(debugMsg string) {
 
 	// Return if debug mode is disabled.
 	if debugMode != true {
@@ -60,7 +60,7 @@ func SetGlobalSensorFlags(dirs []os.FileInfo) error {
 
 		// If debug mode, print out the current 'name' file we are about
 		// to open.
-		debugPrint(dir.Name() + " --> " +
+		debug(dir.Name() + " --> " +
 			hardwareNameFilepathOfGivenDevice)
 
 		// ...check to see if a 'name' file is present inside the directory.
@@ -72,7 +72,7 @@ func SetGlobalSensorFlags(dirs []os.FileInfo) error {
 
 			// If debug mode, then print out a message telling the user
 			// which device is missing a hardware 'name' file.
-			debugPrint("Warning: " + dir.Name() + " does not contain a " +
+			debug("Warning: " + dir.Name() + " does not contain a " +
 				"hardware name file. Skipping...")
 
 			// Move on to the next device.
@@ -85,7 +85,7 @@ func SetGlobalSensorFlags(dirs []os.FileInfo) error {
 
 			// If debug mode, then print out a message telling the user
 			// which device is missing a hardware 'name' file.
-			debugPrint("Warning: The hardware name file of " + dir.Name() +
+			debug("Warning: The hardware name file of " + dir.Name() +
 				" does not contain valid data. Skipping...")
 
 			// Move on to the next device.

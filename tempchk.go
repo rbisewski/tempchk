@@ -26,7 +26,8 @@ var (
 	hardwareNameFile = "name"
 
 	// Attribute file for storing the hardware device current temperature.
-	hardwareTempFile = "temp1_input"
+        tempPrefix = "temp"
+        inputSuffix = "_input"
 
 	// flag to check whether the AMD digital thermo module is in use
 	digitalAmdPowerModuleInUse = false
@@ -81,7 +82,7 @@ func main() {
 	if debugMode {
 
 		// Tell the end-user we are in debug mode.
-		debugPrint("The following IDs are present in the hardware sensor " +
+		debug("The following IDs are present in the hardware sensor " +
 			"monitoring directory:\n")
 
 		// String to hold out concat list of hardware device directories.
@@ -93,7 +94,7 @@ func main() {
 		}
 
 		// Finally, print out a list of device
-		debugPrint(debugStringForListOfDeviceDirs)
+		debug(debugStringForListOfDeviceDirs)
 	}
 
 	// Search thru the directories and set the relevant flags...
@@ -115,7 +116,7 @@ func main() {
 
 		// If debug mode, print out the current 'name' file we are about
 		// to open.
-		debugPrint(dir.Name() + " --> " +
+		debug(dir.Name() + " --> " +
 			hardwareNameFilepathOfGivenDevice)
 
 		// ...check to see if a 'name' file is present inside the directory.
@@ -127,7 +128,7 @@ func main() {
 
 			// If debug mode, then print out a message telling the user
 			// which device is missing a hardware 'name' file.
-			debugPrint("Warning: " + dir.Name() + " does not contain a " +
+			debug("Warning: " + dir.Name() + " does not contain a " +
 				"hardware name file. Skipping...")
 
 			// Move on to the next device.
@@ -140,7 +141,7 @@ func main() {
 
 			// If debug mode, then print out a message telling the user
 			// which device is missing a hardware 'name' file.
-			debugPrint("Warning: The hardware name file of " + dir.Name() +
+			debug("Warning: The hardware name file of " + dir.Name() +
 				" does not contain valid data. Skipping...")
 
 			// Move on to the next device.
@@ -154,11 +155,12 @@ func main() {
 		// Assemble the filepath to the temperature file of the currently
 		// given hardware device.
 		hardwareTemperatureFilepathOfGivenDevice :=
-			hardwareMonitorDirectory + dir.Name() + "/" + hardwareTempFile
+			hardwareMonitorDirectory + dir.Name() + "/" +
+                        tempPrefix + "1" + inputSuffix
 
 		// If debug mode, print out the current 'temperature' file we are
 		// about to open.
-		debugPrint(dir.Name() + " --> " +
+		debug(dir.Name() + " --> " +
 			hardwareTemperatureFilepathOfGivenDevice)
 
 		// If the hardware monitor contains an actively-updating temperature
@@ -172,7 +174,7 @@ func main() {
 
 			// If debug mode, then print out a message telling the user
 			// which device is missing a hardware 'temperature' file.
-			debugPrint("Warning: " + dir.Name() + " does not contain a " +
+			debug("Warning: " + dir.Name() + " does not contain a " +
 				"valid hardware temperature file, ergo no " +
 				"temperature data to print for this device.")
 
@@ -194,7 +196,7 @@ func main() {
 
 		// If debug mode, tell the end-user that this is converted to
 		// a string.
-		debugPrint("Converting temperature file data from " +
+		debug("Converting temperature file data from " +
 			dir.Name() + " into a string.")
 
 		// Attempt to convert the temperature to a string, trim it, and then
@@ -208,7 +210,7 @@ func main() {
 
 			// If debug mode, then print out a message telling the user
 			// which device is missing a hardware 'temperature' file.
-			debugPrint("Warning: " + dir.Name() + " does not contain a " +
+			debug("Warning: " + dir.Name() + " does not contain a " +
 				"integer data in the hardware temperature file, " +
 				"ergo no temperature data to print for this device.")
 
