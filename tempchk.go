@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"strconv"
 	"strings"
 )
 
@@ -149,82 +148,31 @@ func main() {
 		}
 
 		// Trim away any excess whitespace from the hardware name file data.
-		nameValueOfHardwareDeviceAsString :=
-			strings.Trim(string(nameValueOfHardwareDevice), " \n")
+		trimmedName := strings.Trim(string(nameValueOfHardwareDevice), " \n")
 
-		// Assemble the filepath to the temperature file of the currently
-		// given hardware device.
-		hardwareTemperatureFilepathOfGivenDevice :=
-			hardwareMonitorDirectory + dir.Name() + "/" +
-                        tempPrefix + "1" + inputSuffix
-
-		// If debug mode, print out the current 'temperature' file we are
-		// about to open.
-		debug(dir.Name() + " --> " +
-			hardwareTemperatureFilepathOfGivenDevice)
-
-		// If the hardware monitor contains an actively-updating temperature
-		// sensor, then attempt to open it.
-		temperatureValueOfHardwareDevice, err := ioutil.ReadFile(
-			hardwareTemperatureFilepathOfGivenDevice)
-
-		// If err is not nil, or temperature file is empty, tell the
-		// end-user this device does not appear to have temperature data.
-		if err != nil || len(temperatureValueOfHardwareDevice) < 1 {
-
-			// If debug mode, then print out a message telling the user
-			// which device is missing a hardware 'temperature' file.
-			debug("Warning: " + dir.Name() + " does not contain a " +
-				"valid hardware temperature file, ergo no " +
-				"temperature data to print for this device.")
-
-			// append string values equivalent to the longest length.
-			for len(nameValueOfHardwareDeviceAsString) <
-				maxEntryLength+spacerSize {
-
-				// append a space to the end of the string
-				nameValueOfHardwareDeviceAsString += " "
-			}
-
-			// Print a none-available since no temperature data is available.
-			fmt.Println(dir.Name(), " | ",
-				nameValueOfHardwareDeviceAsString, "N/A")
-
-			// With that done, go ahead and move on to the next device.
-			continue
-		}
-
-		// If debug mode, tell the end-user that this is converted to
-		// a string.
-		debug("Converting temperature file data from " +
-			dir.Name() + " into a string.")
-
-		// Attempt to convert the temperature to a string, trim it, and then
-		// to an integer value afterwards.
-		temperatureValueOfHardwareDeviceAsInt, err :=
-			strconv.Atoi(strings.Trim(string(temperatureValueOfHardwareDevice), " \n"))
+                err, sensorData := GetSensorData(trimmedName, dir.Name())
 
 		// If err is not nil, then the temperature file does not have valid
 		// integer data. So tell the end-user no data is available.
-		if err != nil || len(temperatureValueOfHardwareDevice) < 1 {
+		if err != nil || len(trimmedName) < 1 {
 
 			// If debug mode, then print out a message telling the user
 			// which device is missing a hardware 'temperature' file.
-			debug("Warning: " + dir.Name() + " does not contain a " +
-				"integer data in the hardware temperature file, " +
+			debug("Warning: " + dir.Name() + " does not contain " +
+				"valid sensor data in the hardware input file, " +
 				"ergo no temperature data to print for this device.")
 
 			// append string values equivalent to the longest length.
-			for len(nameValueOfHardwareDeviceAsString) <
+			for len(trimmedName) <
 				maxEntryLength+spacerSize {
 
 				// append a space to the end of the string
-				nameValueOfHardwareDeviceAsString += " "
+				trimmedName += " "
 			}
 
 			// Finally, print out the temperature data of the current device.
-			fmt.Println(dir.Name(), " | ",
-				nameValueOfHardwareDeviceAsString, "N/A")
+			fmt.Println(dir.Name(), "  ",
+				trimmedName, "N/A")
 
 			// With that done, go ahead and move on to the next device.
 			continue
@@ -236,28 +184,28 @@ func main() {
 		// Ergo, this needs to be divided by 1000 to give temperature
 		// values that are meaningful to humans.
 		//
-		temperatureValueOfHardwareDeviceAsInt /= 1000
+		sensorData /= 1000
 
 		// This acts as a work-around for the k10temp sensor module.
-		if nameValueOfHardwareDeviceAsString == "k10temp" &&
+		if trimmedName == "k10temp" &&
 			!digitalAmdPowerModuleInUse {
 
 			// Add 30 degrees to the current temperature.
-			temperatureValueOfHardwareDeviceAsInt += 30
+			sensorData += 30
 		}
 
 		// append string values equivalent to the longest length.
-		for len(nameValueOfHardwareDeviceAsString) <
+		for len(trimmedName) <
 			maxEntryLength+spacerSize {
 
 			// append a space to the end of the string
-			nameValueOfHardwareDeviceAsString += " "
+			trimmedName += " "
 		}
 
 		// Finally, print out the temperature data of the current device.
-		fmt.Println(dir.Name(), " | ",
-			nameValueOfHardwareDeviceAsString,
-			temperatureValueOfHardwareDeviceAsInt, "C")
+		fmt.Println(dir.Name(), "  ",
+			trimmedName,
+			sensorData, "C")
 	}
 
 	// If all is well, we can return quietly here.

@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"os"
 	"strings"
+	"strconv"
 )
 
 //! Function to handle printing debug messages when debug mode is on.
@@ -37,6 +38,52 @@ func debug(debugMsg string) {
 	fmt.Println(debugMsg)
 }
 
+//! Obtains hwmon sensor data.
+/*
+ * @param      string    name of device
+ * @param      string    full path of the given hwmon directory
+ *
+ * @returns    error     whether or not the output is feasible
+ *             int       sensor data, as an integer; e.g. degrees C or RPM
+ */
+func GetSensorData(name string, hwmon string) (error, int) {
+
+        // input validation
+        if name == "" || hwmon == "" {
+                return fmt.Errorf("GetSensorData(): invalid input"), -1
+        }
+
+	// Assemble the filepath to the temperature file of the currently
+	// given hardware device.
+	path := hardwareMonitorDirectory + hwmon + "/" +
+                tempPrefix + "1" + inputSuffix
+
+	// If debug mode, print out the current 'temperature' file we are
+	// about to open.
+	debug(hwmon + " --> " + path)
+
+	// If the hardware monitor contains an actively-updating temperature
+	// sensor, then attempt to open it.
+	rawData, err := ioutil.ReadFile(path)
+
+	// If err is not nil, or temperature file is empty, tell the
+	// end-user this device does not appear to have temperature data.
+	if err != nil || len(rawData) < 1 {
+                return err, -1
+	}
+
+	// If debug mode, tell the end-user that this is converted to
+	// a string.
+	debug("Converting temperature file data from " +
+		hwmon + " into a string.")
+
+	// Attempt to convert the temperature to a string, trim it, and then
+	// to an integer value afterwards.
+	trimmedIntData, err := strconv.Atoi(strings.Trim(string(rawData), " \n"))
+
+        return err, trimmedIntData
+}
+
 // SetGlobalSensorFlags ... alters how Linux sees temperatures
 /*
  * @param    os.FileInfo[]    array of directory data
@@ -47,7 +94,7 @@ func SetGlobalSensorFlags(dirs []os.FileInfo) error {
 
 	// input validation
 	if dirs == nil || len(dirs) < 1 {
-		return fmt.Errorf("SetGlobalSensorFlags() --> invalid input")
+		return fmt.Errorf("SetGlobalSensorFlags(): invalid input")
 	}
 
 	// Cycle thru the entire list of device directories...
