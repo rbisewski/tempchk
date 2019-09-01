@@ -47,9 +47,11 @@ var (
 // Initialize the argument input flags.
 func init() {
 
-	// Version mode flag
 	flag.BoolVar(&printVersion, "version", false,
 		"Print the current version of this program and exit.")
+
+	flag.BoolVar(&debugMode, "debug", false,
+		"Dump debug output to stdout.")
 }
 
 //
@@ -57,20 +59,16 @@ func init() {
 //
 func main() {
 
-	// Parse the flags, if any.
 	flag.Parse()
 
-	// if requested, go ahead and print the version; afterwards exit the
-	// program, since this is all done
 	if printVersion {
 		fmt.Println("tempchk v" + Version)
 		os.Exit(0)
 	}
 
-	// Print out a few lines telling the user that the program has started.
-	fmt.Println("\nCurrent temperature sensor readings\n---")
-
-	// Attempt to read in our file contents.
+        // normally there will likely be at least one sensor exposed to
+        // the operating system; however, in theory there could be edge cases
+        // where there are no sensors, so account for that here
 	listOfDeviceDirs, err := ioutil.ReadDir(hardwareMonitorDirectory)
 	if err != nil {
 		panic(err)
@@ -80,20 +78,12 @@ func main() {
 	// the "hardwareMonitorDirectory" global variable.
 	if debugMode {
 
-		// Tell the end-user we are in debug mode.
 		debug("The following IDs are present in the hardware sensor " +
 			"monitoring directory:\n")
 
-		// String to hold out concat list of hardware device directories.
-		debugStringForListOfDeviceDirs := ""
-
-		// Cycle thru the array that holds the directories.
 		for _, dir := range listOfDeviceDirs {
-			debugStringForListOfDeviceDirs += "* " + dir.Name() + "\n"
+			debug("* " + dir.Name())
 		}
-
-		// Finally, print out a list of device
-		debug(debugStringForListOfDeviceDirs)
 	}
 
 	// Search thru the directories and set the relevant flags...
@@ -156,8 +146,6 @@ func main() {
 		// integer data. So tell the end-user no data is available.
 		if err != nil || len(sensors) < 1 {
 
-			// If debug mode, then print out a message telling the user
-			// which device is missing a hardware 'temperature' file.
 			debug("Warning: " + dir.Name() + " does not contain " +
 				"valid sensor data in the hardware input file, " +
 				"ergo no temperature data to print for this device.")
@@ -199,11 +187,12 @@ func main() {
 				paddedName += " "
                         }
 
-                        // Finally, print out the temperature data of the current device.
-                        fmt.Println(dir.Name(), "  ", paddedName, sensor.intData, "C")
+                        sensorLabel := ""
+                        if sensor.category == "temp" {
+                                sensorLabel = "C"
+                        }
+
+                        fmt.Println(dir.Name(), "  ", paddedName, sensor.intData, sensorLabel)
                 }
 	}
-
-	// If all is well, we can return quietly here.
-	os.Exit(0)
 }

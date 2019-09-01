@@ -55,30 +55,36 @@ func GetSensorData(name string, hwmon string) ([]Sensor, error) {
                 return sensors, fmt.Errorf("GetSensorData(): invalid input")
         }
 
-        for i := 1; i < 255; i++ {
-                index := strconv.Itoa(i)
-
+        // figure out the total number of sensors a given device has
+        count := 1
+        for {
 	        // Assemble the filepath to the temperature file of the currently
 	        // given hardware device.
 	        path := hardwareMonitorDirectory + hwmon + "/" +
-                        tempPrefix + index + inputSuffix
+                        tempPrefix + strconv.Itoa(count) + inputSuffix
 
-	        // If debug mode, print out the current 'temperature' file we are
-	        // about to open.
-	        debug(hwmon + " --> " + path)
-
-	        // If the hardware monitor contains an actively-updating temperature
-	        // sensor, then attempt to open it.
 	        rawData, err := ioutil.ReadFile(path)
-
-	        // If err is not nil, or temperature file is empty, tell the
-	        // end-user this device does not appear to have temperature data.
 	        if err != nil || len(rawData) < 1 {
                         break
 	        }
 
-	        // If debug mode, tell the end-user that this is converted to
-	        // a string.
+                count++
+        }
+
+        for i := 1; i <= count; i++ {
+
+	        // Assemble the filepath to the temperature file of the currently
+	        // given hardware device.
+	        path := hardwareMonitorDirectory + hwmon + "/" +
+                        tempPrefix + strconv.Itoa(i) + inputSuffix
+
+	        debug("Opening " + hwmon + " file at:\n" + path)
+
+	        rawData, err := ioutil.ReadFile(path)
+	        if err != nil || len(rawData) < 1 {
+                        break
+	        }
+
 	        debug("Converting temperature file data from " +
 	            hwmon + " into a string.")
 
@@ -92,8 +98,10 @@ func GetSensorData(name string, hwmon string) ([]Sensor, error) {
                 sensor := Sensor{
                        name: name,
                        path: path,
-                       category: "temperature",
+                       category: tempPrefix,
                        intData: trimmedIntData,
+                       number: i,
+                       count: count,
                 }
 
                 sensors = append(sensors, sensor)
