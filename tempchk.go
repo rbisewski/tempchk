@@ -163,13 +163,13 @@ func main() {
 				"ergo no temperature data to print for this device.")
 
 			// append string values equivalent to the longest length.
-			for len(trimmedName) < maxEntryLength+spacerSize {
-				trimmedName += " "
+                        paddedName := trimmedName
+			for len(paddedName) < maxEntryLength+spacerSize {
+				paddedName += " "
 			}
 
 			// Finally, print out the temperature data of the current device.
-			fmt.Println(dir.Name(), "  ",
-				trimmedName, "N/A")
+			fmt.Println(dir.Name(), "  ", paddedName, "N/A")
 
 			// With that done, go ahead and move on to the next device.
 			continue
@@ -186,7 +186,7 @@ func main() {
                         sensor.intData /= 1000
 
                         // This acts as a work-around for the k10temp sensor module.
-                        if trimmedName == "k10temp" &&
+                        if sensor.name == "k10temp" &&
 				!digitalAmdPowerModuleInUse {
 
 				// Add 30 degrees to the current temperature.
@@ -194,17 +194,13 @@ func main() {
                         }
 
                         // append string values equivalent to the longest length.
-                        for len(trimmedName) <
-				maxEntryLength+spacerSize {
-
-				// append a space to the end of the string
-				trimmedName += " "
+                        paddedName := sensor.name
+                        for len(paddedName) < maxEntryLength+spacerSize {
+				paddedName += " "
                         }
 
                         // Finally, print out the temperature data of the current device.
-                        fmt.Println(dir.Name(), "  ",
-				trimmedName,
-				sensor.intData, "C")
+                        fmt.Println(dir.Name(), "  ", paddedName, sensor.intData, "C")
                 }
 	}
 
