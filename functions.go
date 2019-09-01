@@ -65,6 +65,7 @@ func GetSensorData(name string, hwmon string) ([]Sensor, error) {
 
 	        rawData, err := ioutil.ReadFile(path)
 	        if err != nil || len(rawData) < 1 {
+                        count--
                         break
 	        }
 

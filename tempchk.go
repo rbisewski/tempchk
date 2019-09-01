@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 	"strings"
+	"strconv"
 )
 
 //
@@ -190,6 +191,10 @@ func main() {
                         sensorLabel := ""
                         if sensor.category == "temp" {
                                 sensorLabel = "C"
+                        }
+
+                        if sensor.category == "temp" {
+                                sensorLabel += "   temperature sensor " + strconv.Itoa(sensor.number)
                         }
 
                         fmt.Println(dir.Name(), "  ", paddedName, sensor.intData, sensorLabel)
